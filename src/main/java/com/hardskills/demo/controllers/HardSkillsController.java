@@ -5,6 +5,10 @@ import java.util.Optional;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,6 +20,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.hardskills.demo.entities.HardSkills;
 import com.hardskills.demo.repositories.HardSkillsRepository;
@@ -32,11 +39,19 @@ public class HardSkillsController {
 	@Autowired
 	private HardSkillsService hardservice;
 	
+	@Autowired
+	private RestTemplate rest;
+	
+	 @Autowired
+	 @LoadBalanced
+	 private RestTemplate loadBalanced;
+	
+	
 	@GetMapping("/findall")
 	public ResponseEntity<?> getAllHardSkills(){
 		List<HardSkills> hardallskills =hardrepo.findAll();
 		if(!hardallskills.isEmpty()){
-			return new ResponseEntity(hardallskills, HttpStatus.OK);
+			return new ResponseEntity<>(hardallskills, HttpStatus.OK);
 			
 			}
 		else 
@@ -45,9 +60,32 @@ public class HardSkillsController {
 		}
 	}
 	
+	
+	public static String getBearerTokenHeader() {
+	    return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
+	  }
+	
+	@GetMapping(value = "/getuserconnect")
+	public ResponseEntity<?> getConnectedUser() {
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.add("Authorization", getBearerTokenHeader()); 
+        HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+        ResponseEntity<String> response = rest.exchange("http://authrecruit/content", HttpMethod.GET, entity, String.class);
+
+
+		return new ResponseEntity<>(response.getBody(), HttpStatus.OK);
+	}
+	
 	@PostMapping("/create")
 	public ResponseEntity<?> createHard(@RequestBody HardSkills hard){
 		try {
+			HttpHeaders headers = new HttpHeaders();
+			headers.add("Authorization", getBearerTokenHeader()); 
+	        HttpEntity<String> entity = new HttpEntity<String>("parameters", headers);
+	        ResponseEntity<String> response = rest.exchange("http://authrecruit/content", HttpMethod.GET, entity, String.class);
+
+			hard.setUserauth(response.getBody());
 			hardservice.createHardSkills(hard);
 			return new ResponseEntity<HardSkills>(hard, HttpStatus.OK);
 		} catch (ConstraintViolationException e) {
