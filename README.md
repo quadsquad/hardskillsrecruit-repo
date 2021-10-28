@@ -1,5 +1,6 @@
 # hardskillsrecruit-repo
 Hard Skills Repository
+![logo](https://user-images.githubusercontent.com/92694381/139270359-2b487eb2-0a80-48b9-8e9d-aa5a93f97360.png)
 
 Gestion des HardSkills
 RECRUTEMENT PROJECT
