@@ -59,7 +59,18 @@ public class HardSkillsController {
 				return new ResponseEntity<String>("No hard skills Available",HttpStatus.NOT_FOUND);
 		}
 	}
-	
+	@GetMapping("/findall")
+	public ResponseEntity<?> getAllHrdSkills(){
+		List<HardSkills> hardallskills =hardrepo.findAll();
+		if(!hardallskills.isEmpty()){
+			return new ResponseEntity<>(hardallskills, HttpStatus.OK);
+			
+			}
+		else 
+		{
+				return new ResponseEntity<String>("No hard skills Available",HttpStatus.NOT_FOUND);
+		}
+	}
 	
 	public static String getBearerTokenHeader() {
 	    return ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getHeader("Authorization");
